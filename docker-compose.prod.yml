@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  portfolio-backend:
+    build:
+      context: ./portfolio-backend
+    ports:
+      - "8080:8080"
+
+  portfolio-frontend:
+    build:
+      context: ./portfolio-frontend
+    depends_on:
+      - portfolio-backend
+    ports:
+      - "80:80"
