@@ -13,34 +13,21 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class CorsConfig {
 
-    @Value("${APP_ALLOWED_ORIGINS:}")
-    private String envAllowedOrigins;
-
-    @Value("${app.allowed-origins:}")
-    private String propAllowedOrigins;
-
-    private String[] resolveOrigins() {
-        String raw = (envAllowedOrigins != null && !envAllowedOrigins.isBlank())
-                     ? envAllowedOrigins
-                     : (propAllowedOrigins != null && !propAllowedOrigins.isBlank()
-                        ? propAllowedOrigins
-                        : "http://localhost:3000,http://localhost:5173"); // safe default for dev
-
-        return Arrays.stream(raw.split(","))
-                     .map(String::trim)
-                     .filter(s -> !s.isEmpty())
-                     .toArray(String[]::new);
-    }
+    // Replace the previous property/ENV handling with the new frontend.origin property
+    @Value("${frontend.origin:http://localhost:5173}") // fallback for dev
+    private String frontendOrigin;
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
-        String[] allowed = resolveOrigins();
+        String[] allowed = Arrays.stream(frontendOrigin.split(","))
+                            .map(String::trim)
+                            .toArray(String[]::new);
 
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**")
-                        .allowedOrigins(allowed)          // exact allowed origins
+                        .allowedOrigins(allowed)
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);

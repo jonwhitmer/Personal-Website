@@ -20,20 +20,30 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username}")
+    @Value("${sender.email:info@jonwhitmer.com}")
     private String fromEmail;
 
     @Value("${contact.email:jonmwhitmer@gmail.com}")
     private String toEmail;
 
     public void sendContactEmail(ContactRequest request) {
-        log.info("Sending contact email from: {} {}", request.getFirstName(), request.getLastName());
+        log.info("=== EMAIL SERVICE: sendContactEmail() called ===");
+        log.info("From email configured: {}", fromEmail);
+        log.info("To email configured: {}", toEmail);
+        log.info("Sender: {} {} <{}>", request.getFirstName(), request.getLastName(), request.getEmail());
+        log.info("Company: {}", request.getCompany());
+        log.info("Message length: {} characters", request.getMessage() != null ? request.getMessage().length() : 0);
         
         try {
+            log.info("Creating MimeMessage...");
             MimeMessage message = mailSender.createMimeMessage();
+            log.info("MimeMessage created successfully");
+            
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            log.info("MimeMessageHelper created successfully");
             
             helper.setFrom(fromEmail);
+            log.info("From email set: {}", fromEmail);
             helper.setTo(toEmail);
             
             helper.setSubject(String.format("New Portfolio Contact Form Submission - %s %s", 
@@ -44,7 +54,9 @@ public class EmailService {
             
             mailSender.send(message);
             log.info("Contact email sent successfully");
-            
+        } catch (MessagingException e) {
+            log.error("Failed to send contact email", e);
+            throw new RuntimeException("Failed to send email", e);
         } catch (Exception e) {
             log.error("Failed to send contact email", e);
             throw new RuntimeException("Failed to send email", e);
@@ -141,6 +153,10 @@ public class EmailService {
     }
 
     public void sendResumeEmail(String recipientEmail) {
+        log.info("EMAIL SERVICE: sendResumeEmail() called");
+        log.info("Recipient email: {}", recipientEmail);
+        log.info("From email: {}", fromEmail);
+
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");

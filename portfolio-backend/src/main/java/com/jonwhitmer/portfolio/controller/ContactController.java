@@ -12,6 +12,9 @@ import com.jonwhitmer.portfolio.util.IpAddressExtractor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/contact")
 @RequiredArgsConstructor
@@ -25,6 +28,13 @@ public class ContactController {
             @Valid @RequestBody ContactRequest request,
             HttpServletRequest httpRequest) {
         
+        log.info("=== CONTACT FORM SUBMISSION STARTED ===");
+        log.info("Request received from: {}", httpRequest.getRemoteAddr());
+        log.info("Contact details - Name: {} {}, Email: {}, Company: {}", 
+            request.getFirstName(), 
+            request.getLastName(), 
+            request.getEmail(),
+            request.getCompany());
         // Get the real IP address of the client
         String clientIp = ipExtractor.getClientIpAddress(httpRequest);
         
