@@ -252,7 +252,11 @@ await page.waitForTimeout(700);
     'the click never reached the anchor');
   assert('Clicking a link does not open the detail modal', !r.detailOpen,
     'the modal opened instead of following the link');
-  assert('The page did not navigate away during the test', /localhost:5173/.test(r.url), r.url);
+  // Compare against the base this run was actually given, not a hardcoded `localhost:5173`.
+  // The assertion means "we are still on the site under test"; hardcoding the host made it
+  // mean "we are still on localhost", which is a different and weaker claim that happens to
+  // fail when the same machine is addressed as 127.0.0.1 instead.
+  assert('The page did not navigate away during the test', r.url.startsWith(BASE), `${r.url} is not under ${BASE}`);
 }
 
 console.log('\n=== 4c. Contrast of the new text in both themes ===');

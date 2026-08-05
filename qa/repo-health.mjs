@@ -145,10 +145,35 @@ for (const branch of ['dev', 'stage', 'master']) {
 
 console.log('\n=== 5. Nothing secret, nothing junk ===');
 
+// A real environment file is `.env`, `.env.production`, `portfolio-backend/.env` and so on.
+// A template — `.env.example`, `.env.template`, `.env.sample` — is SUPPOSED to be tracked:
+// it carries variable names with no values, which is the whole point of section 6 below.
+// The exclusion is narrow and named, so a file called `.env.prod` still fails this.
+const IS_ENV_TEMPLATE = /\.(example|template|sample)$/;
+const trackedEnvFiles = tracked.filter((f) => /(^|\/)\.env($|\.)/.test(f) && !IS_ENV_TEMPLATE.test(f));
 assert(
-  'No .env file is tracked',
-  tracked.filter((f) => /(^|\/)\.env($|\.)/.test(f)).length === 0,
-  'an environment file is committed',
+  'No real .env file is tracked',
+  trackedEnvFiles.length === 0,
+  `these environment files are committed: ${trackedEnvFiles.join(', ')}`,
+);
+
+// And prove the template is genuinely value-free rather than trusting its name.
+const templates = tracked.filter((f) => /(^|\/)\.env\./.test(f) && IS_ENV_TEMPLATE.test(f));
+const templatesWithSecrets = [];
+for (const f of templates) {
+  for (const line of read(f).split('\n')) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.+?)\s*$/);
+    if (!m) continue;
+    const [, name, val] = m;
+    const looksSensitive = /(KEY|SECRET|TOKEN|PASSWORD)$/.test(name);
+    const looksPlaceholder = /^(|<.*>|your[-_ ].*|change[-_ ]?me|xxx+|\.\.\.)$/i.test(val);
+    if (looksSensitive && !looksPlaceholder) templatesWithSecrets.push(`${f}: ${name} has a value`);
+  }
+}
+assert(
+  'The .env template carries variable names only, never values',
+  templatesWithSecrets.length === 0,
+  templatesWithSecrets.join('\n        -> '),
 );
 
 const SECRET_SHAPES = [
