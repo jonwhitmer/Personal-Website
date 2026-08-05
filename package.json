@@ -1,0 +1,21 @@
+{
+  "name": "jonwhitmer-site",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "jonwhitmer.com — React/Vite frontend, Spring Boot API, and the QA suite that gates both.",
+  "scripts": {
+    "qa": "node qa/run-all.mjs",
+    "qa:health": "node qa/repo-health.mjs",
+    "qa:browser": "node qa/run-all.mjs --browser-only",
+    "dev": "npm --prefix portfolio-frontend run dev",
+    "build": "npm --prefix portfolio-frontend run build",
+    "install:frontend": "npm --prefix portfolio-frontend ci"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

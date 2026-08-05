@@ -1,0 +1,173 @@
+# jonwhitmer.com — continuous integration
+#
+# Runs on every push to dev, stage and master, and on every pull request into them.
+#
+# Why this exists: between 2025-10-21 and 2026-08-04 the live site served a nine-month-old
+# build while the working tree carried the Lowe's role, the 2026 resume and five project
+# demos. Nothing checked, so nobody noticed. This workflow is the thing that notices.
+#
+# Three jobs, deliberately independent so one red does not hide another:
+#   repo-health  fast, no browser  — git hygiene, branch structure, no secrets, no junk
+#   frontend     builds and tests the real production bundle in a real browser
+#   backend      compiles and tests the Spring API
+#
+# `gate` at the end is the single check to require in branch protection.
+
+name: CI
+
+on:
+  push:
+    branches: [dev, stage, master]
+  pull_request:
+    branches: [dev, stage, master]
+  workflow_dispatch:
+
+# A newer push to the same branch makes the older run pointless. Cancel it rather than
+# paying for two runs and reading the wrong one.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  repo-health:
+    name: Repo health
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The branch-structure assertions read refs other than the current one.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # These checks need no dependencies on purpose — they must work on a bare checkout.
+      - name: Check git hygiene, secrets, branch structure and CI readiness
+        run: node qa/repo-health.mjs
+
+  frontend:
+    name: Frontend build and browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            portfolio-frontend/package-lock.json
+
+      - name: Install the QA runner's dependencies
+        run: npm ci
+
+      - name: Install the frontend's dependencies
+        working-directory: portfolio-frontend
+        run: npm ci
+
+      # Cached separately from node_modules — the browser binaries are large and change rarely.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # Building here rather than inside the runner means a build failure is reported as a
+      # build failure, not as "every test failed".
+      - name: Build the production bundle
+        working-directory: portfolio-frontend
+        env:
+          VITE_API_URL: https://api.jonwhitmer.com
+        run: npm run build
+
+      - name: Guard against the placeholder resume path shipping again
+        working-directory: portfolio-frontend
+        run: |
+          if grep -rq "path-to-your-resume" dist/; then
+            echo "::error::dist/ contains /path-to-your-resume.pdf — the mobile Resume button is dead in this build."
+            exit 1
+          fi
+          echo "No placeholder resume path in the built bundle."
+
+      # CI=true makes run-all serve the built bundle rather than the dev server, so the
+      # thing under test is the thing that would actually ship.
+      - name: Run the browser suite against the built bundle
+        env:
+          CI: 'true'
+        run: npm run qa -- --browser-only
+
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-screenshots
+          path: |
+            qa/**/*.png
+            portfolio-frontend/*.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+  backend:
+    name: Backend build and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: temurin
+          cache: maven
+
+      # `verify` rather than `package` so the JaCoCo report binding actually runs.
+      # The dummy values exist because spring-dotenv resolves placeholders at startup and
+      # the test context would otherwise fail on a missing variable rather than a real fault.
+      - name: Build and test
+        working-directory: portfolio-backend
+        env:
+          GMAIL_APP_PASSWORD: ci-not-a-real-password
+          BREVO_KEY: ci-not-a-real-key
+          MY_EMAIL: ci@example.com
+          FRONTEND_ORIGIN: http://localhost:5173
+        run: mvn -B --no-transfer-progress verify
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: portfolio-backend/target/site/jacoco/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  gate:
+    name: CI gate
+    runs-on: ubuntu-latest
+    needs: [repo-health, frontend, backend]
+    if: always()
+    steps:
+      # `needs` alone does not fail this job when a dependency is skipped or cancelled,
+      # which would let a red run report green. Check the results explicitly.
+      - name: Require every job to have passed
+        run: |
+          echo "repo-health: ${{ needs.repo-health.result }}"
+          echo "frontend:    ${{ needs.frontend.result }}"
+          echo "backend:     ${{ needs.backend.result }}"
+          if [ "${{ needs.repo-health.result }}" != "success" ] \
+          || [ "${{ needs.frontend.result }}"    != "success" ] \
+          || [ "${{ needs.backend.result }}"     != "success" ]; then
+            echo "::error::CI gate failed — this commit is not safe to promote."
+            exit 1
+          fi
+          echo "All checks passed."

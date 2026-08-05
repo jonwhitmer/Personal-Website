@@ -53,6 +53,11 @@ frontend/.env.*
 */.env
 */.env.*
 
+# ...but the template that documents which variables exist IS tracked, on purpose.
+# It contains variable NAMES only, never values.
+!.env.example
+!*/.env.example
+
 # =========================
 # === Build / Cache / Temp ===
 # =========================
@@ -113,3 +118,7 @@ test-results/
 *.bak
 *.tmp
 *.log.old
+
+# Vite writes these next to the config when it reloads it. Build junk, never source.
+vite.config.js.timestamp-*
+*.timestamp-*.mjs
