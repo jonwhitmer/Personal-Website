@@ -16,14 +16,37 @@
 //   2. Every wait has a deadline. Nothing here polls forever; on expiry it reports what it
 //      actually saw rather than hanging silently.
 
-import { spawn, execSync } from 'node:child_process';
+import { spawn, spawnSync, execSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const FRONTEND = join(REPO, 'portfolio-frontend');
 const IS_WINDOWS = process.platform === 'win32';
-const NPM = IS_WINDOWS ? 'npm.cmd' : 'npm';
+
+// Vite's own entry point, run through node.
+//
+// Not `npm.cmd run build`: spawning a .cmd without a shell fails EINVAL on Windows, and
+// spawning it WITH a shell concatenates arguments unescaped (Node DEP0190). This path was
+// invisible for a while because a dev server was always already running, so the script
+// always took the "reuse it" branch and never spawned anything.
+const VITE_BIN = join(FRONTEND, 'node_modules', 'vite', 'bin', 'vite.js');
+
+/**
+ * The environment every build and server here needs.
+ *
+ * The build validates its required variables and refuses without them, so the build and
+ * the server must agree. CI failed on exactly this: the workflow set the variables for its
+ * own build step but not for the step that runs this script, which builds again.
+ *
+ * @param local point the API at localhost (a dev run) rather than the live host
+ */
+const buildEnv = (local = false) => ({
+  ...process.env,
+  VITE_API_URL: process.env.VITE_API_URL || (local ? 'http://localhost:8080' : 'https://api.jonwhitmer.com'),
+  VITE_CONTACT_EMAIL: process.env.VITE_CONTACT_EMAIL || 'jonmwhitmer@gmail.com',
+});
 
 const argv = process.argv.slice(2);
 const flag = (name) => argv.includes(`--${name}`);
@@ -173,25 +196,23 @@ if (MANAGE_SERVER) {
   } else {
     if (USE_BUILT) {
       console.log(c.dim('\n  Building the frontend…'));
-      try {
-        execSync(`${NPM} run build`, { cwd: join(REPO, 'portfolio-frontend'), stdio: 'inherit' });
-      } catch {
-        console.log(c.red('\n  The frontend build failed. Nothing further can be tested.\n'));
+      const build = spawnSync(process.execPath, [VITE_BIN, 'build'], {
+        cwd: FRONTEND,
+        stdio: 'inherit',
+        env: buildEnv(),
+      });
+      if (build.error || build.status !== 0) {
+        console.log(c.red(`\n  The frontend build failed (${build.error?.code ?? `exit ${build.status}`}).`));
+        console.log(c.dim('  Nothing further can be tested — every suite would fail against a page that was never built.\n'));
         process.exit(1);
       }
     }
 
     console.log(c.dim(`  Starting the ${USE_BUILT ? 'preview' : 'dev'} server…`));
-    serverProcess = spawn(NPM, ['run', USE_BUILT ? 'preview' : 'dev'], {
-      cwd: join(REPO, 'portfolio-frontend'),
-      env: {
-        ...process.env,
-        VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:8080',
-        // Required by the build. Without it Contact.jsx throws rather than shipping
-        // `mailto:undefined`, so the suite would fail on a configuration gap that has
-        // nothing to do with the code under test.
-        VITE_CONTACT_EMAIL: process.env.VITE_CONTACT_EMAIL || 'jonmwhitmer@gmail.com',
-      },
+    const serverArgs = USE_BUILT ? [VITE_BIN, 'preview', '--host', '--port=5173'] : [VITE_BIN];
+    serverProcess = spawn(process.execPath, serverArgs, {
+      cwd: FRONTEND,
+      env: buildEnv(!USE_BUILT),
       stdio: ['ignore', 'ignore', 'pipe'],
       detached: false,
     });

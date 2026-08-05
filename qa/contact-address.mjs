@@ -58,11 +58,51 @@ assert(
   'no VITE_CONTACT_EMAIL reference found',
 );
 
-assert(
-  'The build fails loudly if the address is not configured',
-  /throw new Error/.test(contactSrc),
-  'an unset address must stop the build, not silently ship a broken or empty mailto',
-);
+// Prove the behaviour rather than grepping for a `throw`. A source match would pass on a
+// guard that is present but never reached — which is exactly the bug this replaced: the
+// check existed, it just ran in the browser instead of the build, so a missing address
+// white-screened the site rather than stopping the build.
+//
+// Skippable with SKIP_BUILD_GUARD=1, because it costs a real build. CI does not skip it.
+if (process.env.SKIP_BUILD_GUARD === '1') {
+  console.log('  SKIP  Build refuses to run without the address (SKIP_BUILD_GUARD=1)');
+} else {
+  const { spawnSync } = await import('node:child_process');
+
+  // Invoke Vite's own entry point through node rather than going via `npm run build`.
+  // Spawning `npm.cmd` without a shell fails EINVAL on Windows, and spawning it WITH a
+  // shell concatenates arguments unescaped (Node DEP0190). Worse, the EINVAL case returns
+  // status `null`, which a naive `status !== 0` check reads as "the build refused" — the
+  // assertion passed while the build had never run at all. Hence the explicit spawn check
+  // below: a test that cannot fail is not a test.
+  const viteBin = join(REPO, 'portfolio-frontend', 'node_modules', 'vite', 'bin', 'vite.js');
+
+  // Blank rather than deleted: an empty string is the shape a misconfigured CI actually
+  // produces, and it is the case a bare `if (name in env)` check would wrongly accept.
+  const built = spawnSync(process.execPath, [viteBin, 'build'], {
+    cwd: join(REPO, 'portfolio-frontend'),
+    env: { ...process.env, VITE_CONTACT_EMAIL: '' },
+    encoding: 'utf8',
+  });
+
+  const output = `${built.stdout ?? ''}${built.stderr ?? ''}`;
+
+  assert(
+    'The guard build actually ran (it did not fail to spawn)',
+    !built.error && built.status !== null,
+    `could not run vite: ${built.error?.code ?? 'status was null'} — the two assertions below would be meaningless`,
+  );
+  assert(
+    'The build REFUSES to run when the address is not configured',
+    built.status !== 0,
+    'the build succeeded with VITE_CONTACT_EMAIL empty — it would ship a page whose every contact route is broken',
+  );
+  assert(
+    'The build failure names the missing variable',
+    /VITE_CONTACT_EMAIL/.test(output),
+    'the build failed but never said which variable was missing, so nobody can fix it',
+  );
+}
 
 console.log('\n=== 2. No stale address anywhere in the frontend ===');
 

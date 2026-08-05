@@ -108,6 +108,10 @@ jobs:
       - name: Run the browser suite against the built bundle
         env:
           CI: 'true'
+          # The runner does its own build, and the build refuses to run without these.
+          # They must be set here too, not only on the build step above.
+          VITE_API_URL: https://api.jonwhitmer.com
+          VITE_CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL || 'jonmwhitmer@gmail.com' }}
         run: npm run qa -- --browser-only
 
       - name: Upload failure screenshots

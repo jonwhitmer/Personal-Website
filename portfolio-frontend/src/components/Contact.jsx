@@ -9,17 +9,12 @@ import { Mail, Check, X, Loader2, Copy } from 'lucide-react';
 // rot, so now there is only one, and it lives in configuration next to the API's MY_EMAIL.
 //
 // Set VITE_CONTACT_EMAIL at build time. See .env.example.
+// Presence and shape are enforced at BUILD time in vite.config.js, not here. This check
+// used to live in this file, and CI showed why that was wrong: `import.meta.env` is
+// substituted during the build, so the guard ran in the browser at module load and a
+// missing value white-screened the whole site rather than breaking one button.
+// A missing build input is the builder's problem, never the visitor's.
 const DIRECT_ADDRESS = import.meta.env.VITE_CONTACT_EMAIL;
-
-// Fail at build time rather than shipping a page whose every contact route is `mailto:undefined`.
-// That failure is invisible to a visitor — the button still looks like it works.
-if (!DIRECT_ADDRESS || !DIRECT_ADDRESS.includes('@')) {
-  throw new Error(
-    'VITE_CONTACT_EMAIL is not set to a valid address. Every contact route on the site depends ' +
-    'on it, and an unset value ships a page where the Copy, Gmail and Outlook buttons all fail ' +
-    'silently. Set it in portfolio-frontend/.env (see .env.example at the repo root).',
-  );
-}
 
 // The address still never reaches the DOM as anything a harvester reads — not as text, and
 // not in a title, alt, aria-label, placeholder or tooltip. It appears only inside an href.
