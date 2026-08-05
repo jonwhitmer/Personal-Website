@@ -124,9 +124,12 @@ assert(
 
 // There must be exactly one production branch. Carrying both `main` and `master` is how a
 // repo ends up with two answers to "what is live", and the stale one eventually gets merged.
+// Checked against the remote too, for the same reason as above: a stale `master` sitting
+// on the remote is exactly the one that gets merged by accident.
 assert(
   'There is no leftover `master` branch competing with `main`',
-  git('rev-parse --verify --quiet refs/heads/master') === '',
+  git('rev-parse --verify --quiet refs/heads/master') === ''
+    && git('rev-parse --verify --quiet refs/remotes/origin/master') === '',
   'both main and master exist; one of them is not the production branch and nothing says which',
 );
 
@@ -134,12 +137,34 @@ console.log('\n=== 4. The three-branch structure exists, and every branch is the
 
 // dev -> stage -> main. `main` is production: it is what the live site is built from, and
 // nothing reaches it that has not passed CI on dev and then on stage.
+/**
+ * Resolve a branch from either a local head or its remote-tracking ref.
+ *
+ * A fresh checkout has exactly one local head — the branch it checked out — so asserting
+ * on refs/heads alone reports `stage` and `main` as missing on any CI runner and on any
+ * clone. What actually matters is that the branch exists in the repository, and for
+ * everyone other than this machine that means it exists on the remote.
+ *
+ * @returns the ref that resolved, or '' if the branch is genuinely absent
+ */
+const resolveBranch = (branch) => {
+  for (const ref of [`refs/heads/${branch}`, `refs/remotes/origin/${branch}`]) {
+    if (git(`rev-parse --verify --quiet ${ref}`) !== '') return ref;
+  }
+  return '';
+};
+
 for (const branch of ['dev', 'stage', 'main']) {
-  const exists = git(`rev-parse --verify --quiet refs/heads/${branch}`) !== '';
-  assert(`Branch \`${branch}\` exists locally`, exists, `refs/heads/${branch} not found`);
+  const ref = resolveBranch(branch);
+  const exists = ref !== '';
+  assert(
+    `Branch \`${branch}\` exists`,
+    exists,
+    `neither refs/heads/${branch} nor refs/remotes/origin/${branch} was found`,
+  );
 
   if (exists) {
-    const files = git(`ls-tree -r --name-only ${branch}`).split('\n').filter(Boolean);
+    const files = git(`ls-tree -r --name-only ${ref}`).split('\n').filter(Boolean);
     assert(
       `Branch \`${branch}\` contains the real site, not the tutorial`,
       files.some((f) => f.startsWith('portfolio-frontend/')),
