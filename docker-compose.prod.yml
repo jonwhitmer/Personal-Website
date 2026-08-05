@@ -1,15 +1,21 @@
-version: "3.8"
-services:
-  portfolio-backend:
-    build:
-      context: ./portfolio-backend
-    ports:
-      - "8080:8080"
-
-  portfolio-frontend:
-    build:
-      context: ./portfolio-frontend
-    depends_on:
-      - portfolio-backend
-    ports:
-      - "80:80"
+# docker-compose.prod.yml
+services: 
+  portfolio-backend: 
+    build: 
+      context: ./portfolio-backend 
+      dockerfile: Dockerfile
+    env_file:
+      - ./portfolio-backend/.env
+    expose:      
+      - "8080" 
+ 
+  portfolio-frontend: 
+    build: 
+      context: ./portfolio-frontend 
+      dockerfile: Dockerfile.prod
+      args: 
+        VITE_API_URL: https://api.jonwhitmer.com 
+    depends_on: 
+      - portfolio-backend 
+    expose:              
+      - "3000"

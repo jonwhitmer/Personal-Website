@@ -2,6 +2,165 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+   Theme
+
+   The page's own background lives on a Tailwind class inside Portfolio.jsx, but
+   <html> and <body> sit BEHIND that element. Left transparent they show the
+   browser's default white, which is what you see for a moment while the app
+   boots and again if you scroll past the end of the document (rubber-banding on
+   a phone). Painting them here means the page is the right colour edge to edge
+   from the very first frame.
+
+   :root is the light values; .dark (set by the blocking script in index.html)
+   restores the dark ones. Dark is the default, so .dark is what a first-time
+   visitor gets.
+   --------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+
+  /* JourneyMap's state outlines. The SVG is drawn with inline fills and strokes
+     rather than classes, so the two themes are swapped here as custom properties
+     and read from the component. Hard-coded rgba(255,255,255,...) was invisible
+     on a light background - the whole map vanished. */
+  --map-state-fill: rgba(15, 23, 42, 0.05);
+  --map-state-stroke: rgba(15, 23, 42, 0.28);
+  --map-state-fill-hi: rgba(37, 99, 235, 0.16);
+  --map-state-stroke-hi: rgba(29, 78, 216, 0.9);
+  --map-route-from: #2563eb;
+  --map-route-to: #0891b2;
+  /* The ring drawn around each city dot, so it reads as a pin against whatever
+     the map behind it happens to be. */
+  --map-city-ring: #f8fafc;
+}
+
+html.dark {
+  color-scheme: dark;
+
+  --map-state-fill: rgba(255, 255, 255, 0.035);
+  --map-state-stroke: rgba(255, 255, 255, 0.14);
+  --map-state-fill-hi: rgba(59, 130, 246, 0.2);
+  --map-state-stroke-hi: rgba(96, 165, 250, 0.75);
+  --map-route-from: #60a5fa;
+  --map-route-to: #22d3ee;
+  --map-city-ring: #0b0b0f;
+}
+
+html,
+body {
+  background-color: #f8fafc; /* slate-50, matching Portfolio's light page */
+}
+
+html.dark,
+html.dark body {
+  background-color: #000000;
+}
+
+/* Drives the travelling dashes along the route in JourneyMap. Applied there as
+   `motion-safe:animate-[dash_2.4s_linear_infinite]`, so it is skipped entirely
+   for anyone whose system asks for reduced motion. The offset counts DOWN so the
+   dashes travel from Pennsylvania towards Charlotte rather than backwards. */
+@keyframes dash {
+  from { stroke-dashoffset: 32; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* The header is sticky, so it floats above the page and would otherwise sit on
+   top of whatever section a nav link jumps to. scroll-margin-top tells the
+   browser to stop that far short, so the section's heading lands just below the
+   header instead of underneath it.
+
+   This is the CSS answer to the problem the uncommitted code was solving with a
+   hard-coded -30px offset inside scrollToSection(). Doing it here also fixes
+   plain #anchor links, browser back/forward, and reloading on an anchor, none of
+   which run that JavaScript. 6.5rem (104px) clears the 97px header with room to
+   breathe. Asserted for every nav target in qa/site-content.mjs. */
+section[id] {
+  scroll-margin-top: 6.5rem;
+}
+
+/* Every chapter needs a clear lane on its left for the story rail to run down.
+   Most sections already reserve one with their own `px-4 sm:px-6 lg:px-8`, but
+   two did not: the intro is `px-4 sm:px-0` (so ZERO horizontal padding at 640px
+   and up) and the assistant panel sets none at all. The rail was therefore
+   drawing straight through "Hi, I'm Jon.", and the hero sat 48px further left
+   than every other section, which is what made the left edge look ragged.
+
+   These values are the exact Tailwind steps the other sections already use, so
+   this is a no-op for them and only brings the two odd ones into line. Both
+   sides are set, so the hero stays symmetric rather than gaining a left margin
+   and keeping a flush right edge.
+
+   NOTE: this makes the hero sit 32-48px further in than the deployed site does.
+   That is a deliberate correction, not a drift: on the deployed site the hero is
+   the only section that ignores the page's own gutter. Asserted at five widths
+   in qa/site-content.mjs. */
+[data-chapter] > div > section {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  [data-chapter] > div > section {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  [data-chapter] > div > section {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* The padding above gets the intro clear of the rail, but every other section
+   ALSO centres a `max-w-6xl` column inside its padding, which pulls their text
+   in another 16px. Without this the hero would still start 16px left of
+   everything below it and the page's left edge would not be a straight line.
+
+   72rem is `max-w-6xl` (the column) and 4rem is this section's own left+right
+   padding from the rule above, so the content column lands exactly where every
+   other section's does. Asserted against the real Experience heading in
+   qa/site-content.mjs rather than trusted as arithmetic. */
+[data-chapter='01'] > div > section:first-of-type {
+  max-width: calc(72rem + 4rem);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* A section inside a chapter has its number and label sitting ABOVE it, outside
+   the section box. Stopping only far enough to clear the header would scroll
+   that eyebrow off the top of the screen, so a nav click would land on a bare
+   heading and the chapter numbering would be invisible to anyone who navigates
+   rather than scrolls. The extra 2rem brings the eyebrow back into view under
+   the header. Asserted per nav target in qa/site-content.mjs. */
+[data-chapter] section[id] {
+  /* Measured, not guessed, and re-measured every time the header height moves,
+     because this number is tied to it: 101px header wanted 10.25rem, 72px
+     wanted 8.5rem, and the current 61px desktop / 57px phone wants 7rem.
+     Candidates were measured at runtime rather than reasoned about:
+       8.5rem -> label 53px below the header on desktop, 60px on a phone
+       7.25rem -> 33 / 40
+       7rem   -> 10-21 / 16-17  (once the chapter eyebrow padding shrank too)
+       7.5rem -> 19-30, but chapter 05 landed at 15, one pixel under the floor
+       7.75rem -> the band below, with every section clear of the boundary
+     Re-measured after the density pass moved BOTH the header and the eyebrow
+     padding: two independent changes in the same direction, so the earlier 7rem
+     reading no longer held. Chapters are different heights, so the right value
+     is the one that clears the floor for the WORST of them, not the average.
+     If either the header or the eyebrow padding moves again, re-measure. Never
+     by eye. */
+  scroll-margin-top: 7.75rem;
+}
+
+/* The section's own generous top padding made sense when it opened with its
+   heading. Now the chapter eyebrow sits above it and supplies the separation,
+   so the original padding just left a ~105px void between the label and the
+   heading it belongs to. The eyebrow's own top padding still spaces one chapter
+   from the next; this only closes the gap INSIDE a chapter. */
+[data-chapter] > div > section {
+  padding-top: 1.5rem;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

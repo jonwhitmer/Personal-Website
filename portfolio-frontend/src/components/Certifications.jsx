@@ -5,8 +5,8 @@ export default function Certifications() {
   return (
     <section id="certifications" className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 sm:mb-8 lg:mb-10 flex items-center gap-3">
-          <Award className="text-cyan-400 w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12" />
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-5 sm:mb-6 lg:mb-8 flex items-center gap-3">
+          <Award className="text-cyan-700 dark:text-cyan-400 w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" />
           <span>Certifications</span>
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
@@ -14,7 +14,7 @@ export default function Certifications() {
             href="https://www.coursera.org/account/accomplishments/specialization/7J8BZ6TYDX0J?utm_source=link&utm_medium=certificate&utm_content=cert_image&utm_campaign=sharing_cta&utm_product=s12n" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl sm:rounded-2xl p-5 sm:p-6 flex items-center justify-between hover:bg-white/10 transition-all group"
+            className="bg-slate-900/[0.04] dark:bg-white/5 backdrop-blur-sm border border-slate-900/10 dark:border-white/10 rounded-xl sm:rounded-2xl p-5 sm:p-6 flex items-center justify-between hover:bg-slate-900/[0.08] dark:hover:bg-white/10 transition-all group"
           >
             <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
@@ -23,17 +23,17 @@ export default function Certifications() {
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-white text-base sm:text-lg truncate">Meta React Specialization</h3>
-                <p className="text-xs sm:text-sm text-gray-400">Sep 2025</p>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg leading-snug">Meta React Specialization</h3>
+                <p className="text-sm text-slate-600 dark:text-gray-400">Sep 2025</p>
               </div>
             </div>
-            <ExternalLink size={18} className="text-blue-400 group-hover:scale-110 transition-transform flex-shrink-0 ml-2 sm:ml-3" />
+            <ExternalLink size={18} className="text-blue-700 dark:text-blue-400 group-hover:scale-110 transition-transform flex-shrink-0 ml-2 sm:ml-3" />
           </a>
           <a 
             href="https://www.coursera.org/account/accomplishments/specialization/MG7VHB9DQ99R" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl sm:rounded-2xl p-5 sm:p-6 flex items-center justify-between hover:bg-white/10 transition-all group"
+            className="bg-slate-900/[0.04] dark:bg-white/5 backdrop-blur-sm border border-slate-900/10 dark:border-white/10 rounded-xl sm:rounded-2xl p-5 sm:p-6 flex items-center justify-between hover:bg-slate-900/[0.08] dark:hover:bg-white/10 transition-all group"
           >
             <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-red-500/20 border border-red-500/30 flex items-center justify-center flex-shrink-0">
@@ -45,11 +45,11 @@ export default function Certifications() {
                 </svg>
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-bold text-white text-base sm:text-lg truncate">Google Project Management</h3>
-                <p className="text-xs sm:text-sm text-gray-400">Feb 2025</p>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg leading-snug">Google Project Management</h3>
+                <p className="text-sm text-slate-600 dark:text-gray-400">Feb 2025</p>
               </div>
             </div>
-            <ExternalLink size={18} className="text-blue-400 group-hover:scale-110 transition-transform flex-shrink-0 ml-2 sm:ml-3" />
+            <ExternalLink size={18} className="text-blue-700 dark:text-blue-400 group-hover:scale-110 transition-transform flex-shrink-0 ml-2 sm:ml-3" />
           </a>
         </div>
       </div>

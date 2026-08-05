@@ -6,11 +6,68 @@
     <link rel="shortcut icon" href="/images/jdub.png" type="image/png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Software Engineer specializing in Java and React" />
-    <meta property="og:title" content="Jon Whitmer" />
-    <meta property="og:description" content="Software Engineer specializing in Java and React" />
-    <meta property="og:image" content="/og.png" />
+    <link rel="canonical" href="https://www.jonwhitmer.com/" />
+
+    <!--
+      The link preview card.
+
+      Every URL below is ABSOLUTE on purpose. A relative `/og.png` is resolved
+      correctly by some scrapers and dropped entirely by others (Slack and a
+      number of smaller unfurlers only accept a full URL), which is how a share
+      ends up as a blank card. Absolute costs nothing and works everywhere.
+
+      og:image:width / og:image:height let a scraper lay the card out before it
+      has finished downloading the image, so the preview does not pop in at the
+      wrong size. The file is a real 1200x630 PNG in public/og.png.
+    -->
+    <meta property="og:site_name" content="Jon Whitmer" />
+    <meta property="og:title" content="Jon Whitmer | Software Engineer" />
+    <meta property="og:description" content="Software Engineer specializing in Java and React. Projects, experience and what I am building next." />
+    <meta property="og:url" content="https://www.jonwhitmer.com/" />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image" content="https://www.jonwhitmer.com/og.png" />
+    <meta property="og:image:secure_url" content="https://www.jonwhitmer.com/og.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Jon Whitmer, Software Engineer. Java, Spring Boot, React, Python." />
+
+    <!-- X/Twitter reads its own namespace and ignores most og: tags, so the
+         card type, title, description and image are all repeated here. Without
+         twitter:card the post renders as a small thumbnail, not a wide card. -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Jon Whitmer | Software Engineer" />
+    <meta name="twitter:description" content="Software Engineer specializing in Java and React. Projects, experience and what I am building next." />
+    <meta name="twitter:image" content="https://www.jonwhitmer.com/og.png" />
+    <meta name="twitter:image:alt" content="Jon Whitmer, Software Engineer. Java, Spring Boot, React, Python." />
+
     <title>Jon Whitmer</title>
+
+    <!--
+      Theme, decided before the browser paints anything.
+
+      This has to be a plain blocking <script> in <head>, not React. React runs
+      after the first paint, so setting the class there means every visitor sees
+      one frame of the wrong colours - a white flash on a dark site, which reads
+      as a broken page.
+
+      Dark is the default on purpose. prefers-color-scheme is NOT consulted: a
+      first-time visitor gets the dark site whatever their OS says, and only an
+      explicit choice stored under `theme` can turn it light.
+    -->
+    <script>
+      (function () {
+        try {
+          if (window.localStorage.getItem('theme') !== 'light') {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {
+          // Private mode / blocked storage: fall back to the default, dark.
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
   
   <body>

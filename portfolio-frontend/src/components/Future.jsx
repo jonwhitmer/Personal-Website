@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Target, Check, Briefcase, GraduationCap, Code, Dumbbell, Gamepad2, Book, Coffee } from 'lucide-react';
+import { Target, Briefcase, GraduationCap, Code, Dumbbell, Gamepad2, Book, Coffee, MapPin } from 'lucide-react';
+import JourneyMap from './JourneyMap';
 
 function HobbySlideshow({ title, description, images, icon, bgColor, borderColor }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -12,11 +13,11 @@ function HobbySlideshow({ title, description, images, icon, bgColor, borderColor
   }, [images.length]);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 bg-white/5 border border-white/10 rounded-xl p-5 sm:p-6 lg:p-8 items-center lg:items-start">
+    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 bg-slate-900/[0.04] dark:bg-white/5 border border-slate-900/10 dark:border-white/10 rounded-xl p-5 sm:p-6 lg:p-8 items-center lg:items-start">
       {/* Image Section */}
       <div className="w-full lg:w-auto flex-shrink-0 flex flex-col items-center">
         <div className="relative w-full max-w-[280px] sm:max-w-[320px] lg:w-[300px]">
-          <div className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-blue-500/30 shadow-2xl shadow-blue-500/20 bg-white/5">
+          <div className="relative w-full aspect-square rounded-2xl overflow-hidden border-2 border-blue-500/30 shadow-2xl shadow-blue-500/20 bg-slate-900/[0.04] dark:bg-white/5">
             {images.map((img, idx) => (
               <img
                 key={idx}
@@ -28,16 +29,22 @@ function HobbySlideshow({ title, description, images, icon, bgColor, borderColor
               />
             ))}
           </div>
-          <div className="flex justify-center gap-2 mt-4">
+          <div className="flex justify-center items-center mt-0">
             {images.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentImageIndex(idx)}
                 aria-label={`View image ${idx + 1}`}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  idx === currentImageIndex ? 'bg-blue-500 w-6' : 'bg-gray-600'
+                className={`h-11 flex items-center justify-center flex-shrink-0 ${
+                  images.length <= 6 ? 'px-[18px]' : 'px-[13px]'
                 }`}
-              />
+              >
+                <span
+                  className={`block h-2 rounded-full transition-all ${
+                    idx === currentImageIndex ? 'bg-blue-500 w-6' : 'bg-slate-400 dark:bg-gray-600 w-2'
+                  }`}
+                />
+              </button>
             ))}
           </div>
         </div>
@@ -49,9 +56,9 @@ function HobbySlideshow({ title, description, images, icon, bgColor, borderColor
           <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${bgColor} border ${borderColor} flex items-center justify-center flex-shrink-0`}>
             {icon}
           </div>
-          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white leading-tight">{title}</h3>
+          <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{title}</h3>
         </div>
-        <div className="text-sm sm:text-base text-gray-400 leading-relaxed [&>p:first-child]:mt-0">
+        <div className="text-sm sm:text-base text-slate-600 dark:text-gray-400 leading-relaxed [&>p:first-child]:mt-0">
           {description}
         </div>
       </div>
@@ -72,17 +79,17 @@ export default function FutureSection({ futureTab, setFutureTab }) {
   return (
     <section id="future" className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 sm:mb-8 lg:mb-10 flex items-center gap-3 leading-tight">
-          <Target className="text-green-400 w-8 h-8 sm:w-10 sm:h-10" />
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-5 sm:mb-6 lg:mb-8 flex items-center gap-3 leading-tight">
+          <Target className="text-green-700 dark:text-green-400 w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8" />
           <span>More About Me</span>
         </h2>
         
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden">
-          <div className="flex flex-col sm:flex-row border-b border-white/10 overflow-x-auto">
+        <div className="bg-slate-900/[0.04] dark:bg-white/5 backdrop-blur-sm border border-slate-900/10 dark:border-white/10 rounded-xl sm:rounded-2xl overflow-hidden">
+          <div className="flex flex-col sm:flex-row border-b border-slate-900/10 dark:border-white/10 overflow-x-auto">
             <button
               onClick={() => setFutureTab('next')}
               className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 font-semibold transition-colors text-sm sm:text-base whitespace-nowrap ${
-                futureTab === 'next' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                futureTab === 'next' ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/[0.04] dark:hover:bg-white/5'
               }`}
             >
               What's Next
@@ -90,7 +97,7 @@ export default function FutureSection({ futureTab, setFutureTab }) {
             <button
               onClick={() => setFutureTab('working')}
               className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 font-semibold transition-colors text-sm sm:text-base whitespace-nowrap ${
-                futureTab === 'working' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                futureTab === 'working' ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/[0.04] dark:hover:bg-white/5'
               }`}
             >
               What I'm Working On
@@ -98,7 +105,7 @@ export default function FutureSection({ futureTab, setFutureTab }) {
             <button
               onClick={() => setFutureTab('hobbies')}
               className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 font-semibold transition-colors text-sm sm:text-base whitespace-nowrap ${
-                futureTab === 'hobbies' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                futureTab === 'hobbies' ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-900/[0.04] dark:hover:bg-white/5'
               }`}
             >
               Get to Know Me
@@ -109,107 +116,57 @@ export default function FutureSection({ futureTab, setFutureTab }) {
             {futureTab === 'next' && (
               <div className="space-y-5 sm:space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-5 sm:p-6">
-                    <h3 className="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2 leading-tight">
-                      <Briefcase size={20} className="text-blue-400 flex-shrink-0" />
-                      <span>Join a Software Team</span>
+                  {/* "Join a software team" came out: he has done that. This is
+                      what is actually ahead, and the master's is written as the
+                      open question it really is rather than a stated plan. */}
+                  <div className="bg-slate-900/[0.04] dark:bg-white/5 border border-slate-900/10 dark:border-white/10 rounded-xl p-5 sm:p-6">
+                    <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2 leading-tight">
+                      <Briefcase size={20} className="text-blue-700 dark:text-blue-400 flex-shrink-0" />
+                      <span>Go deeper on AI engineering</span>
                     </h3>
-                    <p className="text-sm sm:text-base text-gray-400 leading-relaxed">Where I can ship features, own services, and collaborate with talented engineers to build impactful products that solve real problems.</p>
+                    <p className="text-sm sm:text-base text-slate-600 dark:text-gray-400 leading-relaxed">Not just calling a model, but building things around one: retrieval, evaluation, and knowing where it genuinely helps and where a normal function is the better answer.</p>
                   </div>
-                  <div className="bg-white/5 border border-white/10 rounded-xl p-5 sm:p-6">
-                    <h3 className="text-lg sm:text-xl font-bold text-white mb-3 flex items-center gap-2 leading-tight">
-                      <GraduationCap size={20} className="text-purple-400 flex-shrink-0" />
-                      <span>Pursue my Master's Degree</span>
+                  <div className="bg-slate-900/[0.04] dark:bg-white/5 border border-slate-900/10 dark:border-white/10 rounded-xl p-5 sm:p-6">
+                    <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2 leading-tight">
+                      <GraduationCap size={20} className="text-purple-700 dark:text-purple-400 flex-shrink-0" />
+                      <span>Potentially a Master's in AI</span>
                     </h3>
-                    <p className="text-sm sm:text-base text-gray-400 leading-relaxed">Exploring scalable systems and ML with a focus on production-ready solutions and distributed computing.</p>
+                    <p className="text-sm sm:text-base text-slate-600 dark:text-gray-400 leading-relaxed">Something I'm seriously considering, focused on artificial intelligence and machine learning. The deciding factor is whether it teaches me the theory behind the systems I'm already building rather than repeating what the work itself will.</p>
                   </div>
                 </div>
-                <div className="bg-white/5 border border-white/10 rounded-xl p-5 sm:p-6">
-                  <h4 className="text-base sm:text-lg font-bold text-white mb-4 leading-tight">12-Month Goals</h4>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check size={14} className="text-blue-400" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-white font-medium text-sm sm:text-base leading-tight">Ship Production Features</p>
-                        <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mt-1">Contribute to backend services in a collaborative team environment</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check size={14} className="text-blue-400" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-white font-medium text-sm sm:text-base leading-tight">Expand Cloud Skills</p>
-                        <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mt-1">Deploy applications to AWS and master containerization with Kubernetes</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check size={14} className="text-blue-400" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-white font-medium text-sm sm:text-base leading-tight">Deepen ML Knowledge</p>
-                        <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mt-1">Build production ML pipelines and explore model optimization techniques</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {/* The "12-Month Goals" checklist came out. Dated, generic and
+                    written as if promising a manager something. */}
               </div>
             )}
 
             {futureTab === 'working' && (
               <div className="space-y-5 sm:space-y-6">
-                <div className="bg-white/5 border border-white/10 rounded-xl p-5 sm:p-6">
-                  <h3 className="text-lg sm:text-xl font-bold text-white mb-4 flex items-center gap-2 leading-tight">
-                    <Code size={20} className="text-green-400 flex-shrink-0" />
+                <div className="bg-slate-900/[0.04] dark:bg-white/5 border border-slate-900/10 dark:border-white/10 rounded-xl p-5 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 leading-tight">
+                    <Code size={20} className="text-green-700 dark:text-green-400 flex-shrink-0" />
                     <span>What I'm Working On</span>
                   </h3>
                   <div className="space-y-5">
+                    {/* Kept current on purpose: this tab is the first thing that
+                        looks stale on a portfolio when it stops being true. */}
+                    {/* Nothing here describes a work stack. An earlier draft said
+                        "tools I use every day", which reads as the employer's
+                        toolchain even when it isn't. Everything below is framed
+                        explicitly as personal. The LeetCode item and the
+                        in-progress certificate list are gone: the certificates
+                        have their own section, and grinding practice problems is
+                        an interview activity, not something to advertise. */}
                     <div>
-                      <h4 className="text-white font-semibold mb-2 text-sm sm:text-base leading-tight">Portfolio Website with AI Assistant</h4>
-                      <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mb-3">Building this full-stack portfolio with Spring Boot backend, React frontend, and an AI chatbot powered by RAG and Groq API.</p>
-                      <div className="flex gap-2 flex-wrap">
-                        <span className="text-xs px-2.5 py-1 bg-blue-500/20 border border-blue-500/30 rounded text-blue-300">Spring Boot</span>
-                        <span className="text-xs px-2.5 py-1 bg-blue-500/20 border border-blue-500/30 rounded text-blue-300">React</span>
-                        <span className="text-xs px-2.5 py-1 bg-blue-500/20 border border-blue-500/30 rounded text-blue-300">LangChain</span>
-                        <span className="text-xs px-2.5 py-1 bg-blue-500/20 border border-blue-500/30 rounded text-blue-300">FastAPI</span>
-                      </div>
+                      <h4 className="text-slate-900 dark:text-white font-semibold mb-2 text-sm sm:text-base leading-tight">My own side projects</h4>
+                      <p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed">Almost everything I build in my own time is something I then actually use: a reader for my own notes, a board for planning and reviewing work, a video clipping tool, and a small dashboard that runs the lot on my machine. Depending on your own software daily is a blunt and very useful kind of feedback.</p>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold mb-2 text-sm sm:text-base leading-tight">Practicing LeetCode & NeetCode</h4>
-                      <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">Solving algorithmic problems daily to strengthen my data structures and algorithms skills for technical interviews and real-world problem-solving.</p>
+                      <h4 className="text-slate-900 dark:text-white font-semibold mb-2 text-sm sm:text-base leading-tight">Working out what AI is actually good for</h4>
+                      <p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed">Less prompt trivia, more of the engineering around a model: retrieval, evaluating whether the output is any good, and being willing to conclude that a plain function would have done the job better.</p>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold mb-2 text-sm sm:text-base leading-tight">Professional Certifications</h4>
-                      <p className="text-gray-400 text-xs sm:text-sm leading-relaxed mb-3">Actively working through multiple professional certifications:</p>
-                      <ul className="space-y-2 ml-2 sm:ml-4">
-                        <li className="flex items-start gap-2 text-gray-400 text-xs sm:text-sm">
-                          <span className="text-blue-400 flex-shrink-0">→</span>
-                          <span className="leading-relaxed"><strong className="text-gray-300">Meta Front-End Developer Professional Certificate</strong></span>
-                        </li>
-                        <li className="flex items-start gap-2 text-gray-400 text-xs sm:text-sm">
-                          <span className="text-blue-400 flex-shrink-0">→</span>
-                          <span className="leading-relaxed"><strong className="text-gray-300">IBM AI Engineering Professional Certificate</strong></span>
-                        </li>
-                        <li className="flex items-start gap-2 text-gray-400 text-xs sm:text-sm">
-                          <span className="text-blue-400 flex-shrink-0">→</span>
-                          <span className="leading-relaxed"><strong className="text-gray-300">Google Cybersecurity Professional Certificate</strong></span>
-                        </li>
-                        <li className="flex items-start gap-2 text-gray-400 text-xs sm:text-sm">
-                          <span className="text-blue-400 flex-shrink-0">→</span>
-                          <span className="leading-relaxed"><strong className="text-gray-300">AWS Cloud Practitioner</strong></span>
-                        </li>
-                        <li className="flex items-start gap-2 text-gray-400 text-xs sm:text-sm">
-                          <span className="text-blue-400 flex-shrink-0">→</span>
-                          <span className="leading-relaxed">YouTube courses, technical books, and hands-on projects</span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h4 className="text-white font-semibold mb-2 text-sm sm:text-base leading-tight">Keeping Up with the Tech & AI Space</h4>
-                      <p className="text-gray-400 text-xs sm:text-sm leading-relaxed">Staying current with the rapidly evolving tech and AI landscape. Following industry news, trying new tools, and understanding how emerging technologies are shaping the future of software engineering.</p>
+                      <h4 className="text-slate-900 dark:text-white font-semibold mb-2 text-sm sm:text-base leading-tight">Reading and listening</h4>
+                      <p className="text-slate-600 dark:text-gray-400 text-sm leading-relaxed">Long-form conversations about technology and how it is changing things, technical books, and enough industry noise to tell a genuine shift from a hype cycle.</p>
                     </div>
                   </div>
                 </div>
@@ -218,6 +175,23 @@ export default function FutureSection({ futureTab, setFutureTab }) {
 
             {futureTab === 'hobbies' && (
               <div className="space-y-5 sm:space-y-6">
+                {/* Where he is from and where he is now, as a small picture in
+                    the "get to know me" tab rather than a chapter of its own.
+                    The map is the whole point, so there is no prose beside it. */}
+                <div className="bg-slate-900/[0.04] dark:bg-white/5 border border-slate-900/10 dark:border-white/10 rounded-xl p-5 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 leading-tight">
+                    <MapPin size={20} className="text-cyan-700 dark:text-cyan-400 flex-shrink-0" />
+                    <span>Where I'm From</span>
+                  </h3>
+                  <p className="text-sm sm:text-base text-slate-600 dark:text-gray-400 leading-relaxed mb-5">
+                    I grew up in western Pennsylvania, about an hour north of Pittsburgh, and stayed
+                    close by for university. I moved down to Charlotte, North Carolina for work, and
+                    that is where I am now.
+                  </p>
+                  <div className="max-w-[260px] sm:max-w-[300px] mx-auto">
+                    <JourneyMap />
+                  </div>
+                </div>
                 <HobbySlideshow
                   title="Staying Active"
                   description={
@@ -227,7 +201,7 @@ export default function FutureSection({ futureTab, setFutureTab }) {
                     </>
                   }
                   images={[steps, walkingpad, bball, weights]}
-                  icon={<Dumbbell size={24} className="text-blue-400" />}
+                  icon={<Dumbbell size={24} className="text-blue-700 dark:text-blue-400" />}
                   bgColor="bg-blue-500/20"
                   borderColor="border-blue-500/30"
                 />
@@ -239,19 +213,19 @@ export default function FutureSection({ futureTab, setFutureTab }) {
                       <p className="mt-0">I love podcasts for both <strong>entertainment</strong> and <strong>learning new perspectives</strong>. Here are my favorites:</p>
                       <ul className="space-y-2 ml-4 mt-3">
                         <li className="flex items-start gap-2">
-                          <span className="text-blue-400 mt-1 flex-shrink-0">•</span>
+                          <span className="text-blue-700 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
                           <div>
                             <strong>The Joe Rogan Experience (JRE):</strong> <em>"A long-form conversation hosted by Joe Rogan with friends and guests who have compelling stories and ideas."</em> It's the perfect mix of comedy, curiosity, and deep dives into topics I'd never think to explore.
                           </div>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="text-blue-400 mt-1 flex-shrink-0">•</span>
+                          <span className="text-blue-700 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
                           <div>
                             <strong>This Past Weekend (Theo Von):</strong> <em>"A podcast where Theo Von shares stories of his past, reflects on life, and talks with guests about the human experience."</em> Theo's storytelling is hilarious and surprisingly introspective at the same time.
                           </div>
                         </li>
                         <li className="flex items-start gap-2">
-                          <span className="text-blue-400 mt-1 flex-shrink-0">•</span>
+                          <span className="text-blue-700 dark:text-blue-400 mt-1 flex-shrink-0">•</span>
                           <div>
                             <strong>Lex Fridman Podcast:</strong> <em>"Conversations about science, technology, history, philosophy, and the nature of intelligence, consciousness, love, and power."</em> This one's <strong>really for me</strong> because Lex gets super techy. He's had <strong>Sundar Pichai</strong> (Google CEO) and <strong>Sam Altman</strong> (OpenAI CEO) on, and hearing their perspectives on the <em>AI race</em> that's actively going on right now is exactly the kind of content I'm looking for.
                           </div>
@@ -260,7 +234,7 @@ export default function FutureSection({ futureTab, setFutureTab }) {
                     </>
                   }
                   images={[podcast]}
-                  icon={<Coffee size={24} className="text-purple-400" />}
+                  icon={<Coffee size={24} className="text-purple-700 dark:text-purple-400" />}
                   bgColor="bg-purple-500/20"
                   borderColor="border-purple-500/30"
                 />
@@ -274,7 +248,7 @@ export default function FutureSection({ futureTab, setFutureTab }) {
                     </>
                   }
                   images={[steelers, bronjerseys]}
-                  icon={<Gamepad2 size={24} className="text-cyan-400" />}
+                  icon={<Gamepad2 size={24} className="text-cyan-700 dark:text-cyan-400" />}
                   bgColor="bg-cyan-500/20"
                   borderColor="border-cyan-500/30"
                 />
@@ -289,7 +263,7 @@ export default function FutureSection({ futureTab, setFutureTab }) {
                     </>
                   }
                   images={[patrickbateman]}
-                  icon={<Book size={24} className="text-green-400" />}
+                  icon={<Book size={24} className="text-green-700 dark:text-green-400" />}
                   bgColor="bg-green-500/20"
                   borderColor="border-green-500/30"
                 />

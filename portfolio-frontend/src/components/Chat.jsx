@@ -62,7 +62,7 @@ export default function Chat({
                       <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
                       <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
                     </div>
-                    <span className="text-gray-400 text-xs md:text-sm ml-2 animate-pulse">Thinking...</span>
+                    <span className="text-gray-400 text-sm ml-2 animate-pulse">Thinking...</span>
                   </div>
                 </div>
               </div>
@@ -93,7 +93,7 @@ export default function Chat({
               </button>
             </form>
             {charCount > 0 && (
-              <p className={`text-xs mt-2 text-right ${charCount >= MAX_CHAR_LIMIT ? 'text-red-400' : 'text-gray-500'}`}>
+              <p className={`text-[13px] sm:text-xs mt-2 text-right ${charCount >= MAX_CHAR_LIMIT ? 'text-red-400' : 'text-gray-500'}`}>
                 {charCount}/{MAX_CHAR_LIMIT} characters
               </p>
             )}
