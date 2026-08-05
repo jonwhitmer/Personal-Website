@@ -109,10 +109,11 @@ const isVideo = (src) =>
 // 2024; Intelli-Assess is the Independent Contractor build, Dec 2024 - Sep
 // 2025). The four current apps are 2026.
 //
-// Links are deliberately conservative. Only URLs that were verified to exist
-// are here: the deployed Lectern site, and the one public repo that matches a
-// project on this page by name. Everything else says so in plain words rather
-// than pointing at a URL that might 404 in front of a recruiter.
+// Links are deliberately conservative. The only URL here is the one public repo
+// that matches a project on this page by name. Everything else says so in plain
+// words rather than pointing at a URL that might 404 in front of a recruiter.
+// Lectern's deployed site used to be linked and no longer is: it serves my own
+// notes, so it is not something this page should let anyone walk into.
 const projects = [
   {
     id: 'vesper',
@@ -155,9 +156,10 @@ const projects = [
     period: '2026',
     summary: 'Turns my own markdown notes into a reading app that is actually pleasant to read in. Deployed, so the notes are readable on my phone and not just on the machine that wrote them.',
     images: [lecternVid, lectern1, lectern2, lectern3, lectern4],
-    links: [
-      { kind: 'live', label: 'Live site', href: 'https://lectern-omega.vercel.app' }
-    ],
+    // No link to the deployed copy, deliberately. That copy reads my personal
+    // notes, so this page must not be a door into it - the screenshots and the
+    // demo clip show what it does without handing anyone the address.
+    links: [],
     codeNote: 'Private repo',
     bullets: [
       "Typesets plain markdown into a serif reading surface built for long reading rather than skimming",

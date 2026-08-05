@@ -86,14 +86,17 @@ const links = await page.evaluate(() => {
 
 const hrefsOf = (id) => (links[id]?.anchors || []).map(a => a.href);
 
-assert('Lectern links to the deployed site',
-  hrefsOf('lectern').includes('https://lectern-omega.vercel.app'),
+// Lectern's deployed copy reads Jon's personal notes, so this site must not be a
+// way in to it. No link from the tile, and the deployed hostname appears nowhere
+// on the page at all - not in an href, not in the visible text.
+assert('Lectern does NOT link out to its deployed site',
+  hrefsOf('lectern').length === 0,
   `lectern hrefs: ${JSON.stringify(hrefsOf('lectern'))}`);
 assert('Discord Bot links to its public repo',
   hrefsOf('discord').includes('https://github.com/jonwhitmer/DiscordBot'),
   `discord hrefs: ${JSON.stringify(hrefsOf('discord'))}`);
 
-for (const id of ['reeljax', 'docket', 'coaster']) {
+for (const id of ['reeljax', 'lectern', 'docket', 'coaster']) {
   assert(`${id} shows a quiet "Private repo" label instead of a made-up link`,
     /private repo/i.test(links[id]?.text || ''), `tile text: ${links[id]?.text}`);
   assert(`${id} invents no GitHub URL`,
@@ -107,12 +110,18 @@ assert('Every external link opens in a new tab safely',
   JSON.stringify(allAnchors));
 assert('No link points anywhere that was not verified',
   allAnchors.every(a => [
-    'https://lectern-omega.vercel.app',
     'https://github.com/jonwhitmer/MapVideo',
     'https://github.com/jonwhitmer/Fantasy-Football-Scheduler',
     'https://github.com/jonwhitmer/DiscordBot',
   ].includes(a.href)),
   JSON.stringify(allAnchors.map(a => a.href)));
+
+// Belt and braces: the address itself must not survive anywhere in the rendered
+// page, so a reader cannot copy it out of the text even without a clickable link.
+const lecternHostAnywhere = await page.evaluate(() =>
+  /lectern[a-z0-9-]*\.vercel\.app/i.test(document.documentElement.innerHTML));
+assert('The deployed Lectern address appears nowhere in the page',
+  !lecternHostAnywhere, 'a lectern *.vercel.app address is still in the DOM');
 
 console.log('\n=== 3. Opening a tile shows the full detail ===');
 
@@ -233,22 +242,25 @@ await page.waitForTimeout(700);
   await page.waitForTimeout(500);
 }
 
-// The link row must sit ABOVE the stretched layer, or "Live site" silently opens
-// the modal instead of the site.
+// The link row must sit ABOVE the stretched layer, or "View code" silently opens
+// the modal instead of the repo. Checked on Discord Bot: it is now the only tile
+// on the grid that still carries an outbound link.
 {
   await page.evaluate(() => {
+    document.querySelector('[data-project-tile="discord"]')?.scrollIntoView({ block: 'center' });
     // Neutralise the navigation so the test does not leave the page.
-    document.querySelector('[data-project-tile="lectern"] a')
+    document.querySelector('[data-project-tile="discord"] a')
       ?.addEventListener('click', (e) => { e.preventDefault(); window.__linkClicked = true; });
   });
-  await page.locator('[data-project-tile="lectern"] a').click();
+  await page.waitForTimeout(500);
+  await page.locator('[data-project-tile="discord"] a').click();
   await page.waitForTimeout(600);
   const r = await page.evaluate(() => ({
     linkClicked: !!window.__linkClicked,
     detailOpen: !!document.querySelector('[data-project-detail]'),
     url: location.href,
   }));
-  assert('The Live site link is the thing that receives the click', r.linkClicked,
+  assert('The outbound link is the thing that receives the click', r.linkClicked,
     'the click never reached the anchor');
   assert('Clicking a link does not open the detail modal', !r.detailOpen,
     'the modal opened instead of following the link');
@@ -257,6 +269,34 @@ await page.waitForTimeout(700);
   // mean "we are still on localhost", which is a different and weaker claim that happens to
   // fail when the same machine is addressed as 127.0.0.1 instead.
   assert('The page did not navigate away during the test', r.url.startsWith(BASE), `${r.url} is not under ${BASE}`);
+}
+
+console.log('\n=== 4bb. The Lectern detail panel offers no way in either ===');
+
+// The detail modal renders its own copy of the link row, so the tile passing is
+// not proof. Open Lectern and check the panel the same way.
+{
+  await page.evaluate(() => {
+    document.querySelector('[data-project-tile="lectern"] [data-project-open]')?.click();
+  });
+  await page.waitForTimeout(700);
+  const panel = await page.evaluate(() => {
+    const d = document.querySelector('[data-project-detail]');
+    if (!d) return null;
+    return {
+      id: d.getAttribute('data-project-detail'),
+      hrefs: [...d.querySelectorAll('a')].map(a => a.getAttribute('href')),
+      html: d.innerHTML,
+    };
+  });
+  assert('The Lectern detail panel opened', panel?.id === 'lectern', `opened "${panel?.id}"`);
+  assert('The Lectern detail panel carries no outbound link',
+    (panel?.hrefs || []).length === 0, `panel hrefs: ${JSON.stringify(panel?.hrefs)}`);
+  assert('The deployed Lectern address is not in the detail panel either',
+    !/lectern[a-z0-9-]*\.vercel\.app/i.test(panel?.html || ''),
+    'the vercel address is still rendered inside the panel');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(500);
 }
 
 console.log('\n=== 4c. Contrast of the new text in both themes ===');
@@ -280,8 +320,9 @@ const CONTRAST = `(() => {
   check('[data-project-tile="lectern"] h3', 'Tile title');
   check('[data-project-tile="lectern"] p', 'Tile summary');
   check('[data-project-tile="lectern"] [data-project-open]', 'View details button');
-  check('[data-project-tile="lectern"] a', 'Live site link');
+  check('[data-project-tile="discord"] a', 'Outbound link');
   check('[data-project-tile="reeljax"] span.relative', 'Private repo label');
+  check('[data-project-tile="lectern"] span.relative', 'Lectern private repo label');
   return out;
 })()`;
 
