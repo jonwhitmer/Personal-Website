@@ -1,0 +1,75 @@
+# Coaster project config — puts jonwhitmer.com on the Coaster dashboard so the
+# site can be started, stopped and watched without touching a terminal.
+#
+# This repo lives OUTSIDE C:\Users\jonwh\Code, so C:\Users\jonwh\Personal-Website
+# is registered as its own Coaster watch root (same arrangement as Vesper).
+#
+# WHAT RUNS IN PRODUCTION, for orientation:
+#   www.jonwhitmer.com -> Render service "portfolio-frontend-s2eg"  (this folder's portfolio-frontend)
+#   api.jonwhitmer.com -> Render service "portfolio-backend-h6oy"   (this folder's portfolio-backend)
+version: 1
+
+application:
+  id: personal-website
+  name: "Personal Website"
+  color: "#9D4EDD"   # the violet accent used in the site's own components
+  # The site's real "JW" mark (portfolio-frontend/public/images/jdub.png), copied
+  # into Coaster's branding folder AND the installed desktop copy under
+  # AppData\Local\Programs\coaster — Coaster serves the row icon from whichever
+  # surface is running, so both need the file or the icon is missing in one.
+  # Declared here rather than PATCHed onto the app record so a rescan cannot drop it.
+  logo: "/assets/branding/personal-website.png"
+
+services:
+  # The Vite dev server for the real portfolio. `npm run dev` serves the site
+  # with hot reload, which is what we want while building on it — the published
+  # site is built by Render from this same source, not from anything local.
+  #
+  # vite.config.js sets strictPort: true on 5173, so Vite exits rather than
+  # silently drifting to another port. That is deliberate: a wrong port here
+  # would show green in Coaster while serving nothing at the address in the row.
+  # Coaster labels a launch profile "<app name> <service name>", so this reads
+  # as "Personal Website Frontend" rather than "Personal Website Website".
+  - id: web
+    name: "Frontend"
+    directory: portfolio-frontend
+    install: "npm.cmd install"
+    build: "npm.cmd run build"
+    command: "npm.cmd run dev"
+    env:
+      # Points the contact form and the AI-assistant panel at a LOCAL backend on
+      # purpose. Left unset it resolves to "undefined/..."; pointed at the live
+      # https://api.jonwhitmer.com it would send real email from a dev session.
+      # The backend is not started by Coaster yet — see the note at the bottom.
+      VITE_API_URL: "http://localhost:8080"
+    ports: [5173]
+    health:
+      # MUST be /index.html, not "/". Vite's dev server only falls back to the
+      # HTML document when the request's Accept header contains text/html, and
+      # Coaster's health probe is a bare java.net.http GET that sends NO Accept
+      # header at all. So "/" answers 404 to Coaster while answering 200 to a
+      # browser and to curl — the service looks broken while being perfectly
+      # healthy, and Coaster kills it after the 90s startup deadline.
+      # Asking for the file by name skips the fallback and hits Vite's static
+      # handler, which ignores Accept. Verified with the real client: "/" -> 404,
+      # "/index.html" -> 200.
+      #
+      # Still a real check: it is the exact document the site boots from, it is
+      # served from memory, and it touches no database or network.
+      url: http://127.0.0.1:5173/index.html
+      interval: 10s
+      timeout: 3s
+    restart:
+      policy: on-failure
+      max_attempts: 3
+
+# NOT WIRED UP YET — portfolio-backend (Spring Boot, :8080)
+#
+# It is deliberately absent rather than broken. Two things stop it booting today:
+#   1. GMAIL_APP_PASSWORD is commented out in portfolio-backend/.env
+#   2. application-dev.properties sets spring.mail.test-connection=true, so
+#      Spring verifies the SMTP login DURING STARTUP and aborts if it fails
+#
+# Adding it as a second service before fixing those would leave Coaster showing
+# this app as "Partially running" — one service up, one permanently down — which
+# is a warn state that trains you to ignore the row. Add it here once it boots.
