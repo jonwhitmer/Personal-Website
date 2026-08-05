@@ -78,18 +78,23 @@ reason first. A test is never weakened to make it pass.
 ## Branches and deployment
 
 ```
-dev  ──▶  stage  ──▶  master
- │          │            │
- │          │            └── production — www.jonwhitmer.com
+dev  ──▶  stage  ──▶  main
+ │          │           │
+ │          │           └── production — www.jonwhitmer.com
  │          └── pre-production — verify against the real API before promoting
  └── integration — where day-to-day work lands
 ```
 
 - **`dev`** — everyday work. CI runs on every push.
 - **`stage`** — a release candidate. Merge `dev` here when it is ready to be looked at.
-- **`master`** — production. **Only ever fast-forwarded from `stage`, and only when CI is green.**
+- **`main`** — production, and the repository default. **Only ever fast-forwarded from
+  `stage`, and only when CI is green.**
 
-Nothing reaches `master` without passing the `CI gate` check. That gate is the single
+There is deliberately **no `master` branch**. Two production-looking branches means two
+answers to "what is live", and the stale one eventually gets merged by accident. The
+repo-health check fails if `master` ever reappears.
+
+Nothing reaches `main` without passing the `CI gate` check. That gate is the single
 status to require in branch protection; it fails if any of `repo-health`, `frontend` or
 `backend` failed, was skipped or was cancelled.
 
@@ -108,12 +113,12 @@ git switch dev && git push                    # CI runs
 git switch stage && git merge --ff-only dev
 git push                                      # CI runs again
 
-git switch master && git merge --ff-only stage
+git switch main && git merge --ff-only stage
 git push                                      # deploys
 ```
 
 `--ff-only` is deliberate: it refuses rather than creating a merge commit, which means
-`master` can never contain something `stage` has not already proven.
+`main` can never contain something `stage` has not already proven.
 
 ---
 

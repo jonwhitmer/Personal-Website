@@ -45,6 +45,7 @@ const SUITE_TIMEOUT_MS = 300_000;
 // repo-health is deliberately separate: it needs no browser and no server.
 const BROWSER_SUITES = [
   ['site-content', 'Content, header, resume and the Lowe\'s role'],
+  ['contact-address', 'One contact address, from configuration, and the right one'],
   ['theme', 'Dark mode and theme persistence'],
   ['projects-grid', 'The projects grid and its detail panel'],
   ['project-videos', 'The five demo videos actually decode and play'],
@@ -183,7 +184,14 @@ if (MANAGE_SERVER) {
     console.log(c.dim(`  Starting the ${USE_BUILT ? 'preview' : 'dev'} server…`));
     serverProcess = spawn(NPM, ['run', USE_BUILT ? 'preview' : 'dev'], {
       cwd: join(REPO, 'portfolio-frontend'),
-      env: { ...process.env, VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:8080' },
+      env: {
+        ...process.env,
+        VITE_API_URL: process.env.VITE_API_URL || 'http://localhost:8080',
+        // Required by the build. Without it Contact.jsx throws rather than shipping
+        // `mailto:undefined`, so the suite would fail on a configuration gap that has
+        // nothing to do with the code under test.
+        VITE_CONTACT_EMAIL: process.env.VITE_CONTACT_EMAIL || 'jonmwhitmer@gmail.com',
+      },
       stdio: ['ignore', 'ignore', 'pipe'],
       detached: false,
     });

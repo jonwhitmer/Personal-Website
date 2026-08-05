@@ -1,20 +1,42 @@
 import React from 'react';
 import { Mail, Check, X, Loader2, Copy } from 'lucide-react';
 
-// The direct address is assembled at runtime and only ever reaches the DOM as
-// the href of a mailto: link. It is never rendered as text, and never put in a
-// title, alt, aria-label, placeholder or tooltip, so the scrapers that harvest
-// visible addresses off a page find nothing here. The visible label is words.
+// ONE definition of where a message goes, and it is not written here.
+//
+// It used to be. The component hardcoded one address while the API delivered to another,
+// so the Copy button and the contact form reached two different inboxes and the form said
+// "Message sent successfully!" either way. Two hardcoded copies is what let one of them
+// rot, so now there is only one, and it lives in configuration next to the API's MY_EMAIL.
+//
+// Set VITE_CONTACT_EMAIL at build time. See .env.example.
+const DIRECT_ADDRESS = import.meta.env.VITE_CONTACT_EMAIL;
+
+// Fail at build time rather than shipping a page whose every contact route is `mailto:undefined`.
+// That failure is invisible to a visitor — the button still looks like it works.
+if (!DIRECT_ADDRESS || !DIRECT_ADDRESS.includes('@')) {
+  throw new Error(
+    'VITE_CONTACT_EMAIL is not set to a valid address. Every contact route on the site depends ' +
+    'on it, and an unset value ships a page where the Copy, Gmail and Outlook buttons all fail ' +
+    'silently. Set it in portfolio-frontend/.env (see .env.example at the repo root).',
+  );
+}
+
+// The address still never reaches the DOM as anything a harvester reads — not as text, and
+// not in a title, alt, aria-label, placeholder or tooltip. It appears only inside an href.
+// The visible label is words. `qa/contact-address.mjs` asserts that property directly.
+//
+// Honest limitation: because Vite inlines env values at build time, the address now sits in
+// the public bundle as one contiguous string where it used to be assembled from parts. That
+// only ever slowed down someone reading the JavaScript; it never affected page harvesters,
+// which is the threat this design actually addresses.
+const DIRECT_SUBJECT = 'Hello from your portfolio';
+
 const DIRECT_MAIL_HREF = [
   'mailto:',
-  ['jonwhitmer23', ['gmail', 'com'].join('.')].join('@'),
+  DIRECT_ADDRESS,
   '?subject=',
-  encodeURIComponent('Hello from your portfolio'),
+  encodeURIComponent(DIRECT_SUBJECT),
 ].join('');
-
-// The same address the mailto: href is built from, kept out of the markup.
-const DIRECT_ADDRESS = ['jonwhitmer23', ['gmail', 'com'].join('.')].join('@');
-const DIRECT_SUBJECT = 'Hello from your portfolio';
 
 // A bare mailto: only works if the visitor's machine has a default mail client
 // registered. On a Windows box with none set up it opens an empty browser tab

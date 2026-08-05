@@ -118,13 +118,23 @@ assert('CI runs the QA suite', /npm run qa|run-all/.test(ci), 'the workflow neve
 assert('CI builds the backend', /mvn|maven/i.test(ci), 'the workflow never compiles the Spring backend');
 assert(
   'CI guards the branches that deploy',
-  /dev/.test(ci) && /stage/.test(ci) && /master/.test(ci),
-  'the workflow does not name dev, stage and master',
+  /dev/.test(ci) && /stage/.test(ci) && /main/.test(ci),
+  'the workflow does not name dev, stage and main',
+);
+
+// There must be exactly one production branch. Carrying both `main` and `master` is how a
+// repo ends up with two answers to "what is live", and the stale one eventually gets merged.
+assert(
+  'There is no leftover `master` branch competing with `main`',
+  git('rev-parse --verify --quiet refs/heads/master') === '',
+  'both main and master exist; one of them is not the production branch and nothing says which',
 );
 
 console.log('\n=== 4. The three-branch structure exists, and every branch is the REAL site ===');
 
-for (const branch of ['dev', 'stage', 'master']) {
+// dev -> stage -> main. `main` is production: it is what the live site is built from, and
+// nothing reaches it that has not passed CI on dev and then on stage.
+for (const branch of ['dev', 'stage', 'main']) {
   const exists = git(`rev-parse --verify --quiet refs/heads/${branch}`) !== '';
   assert(`Branch \`${branch}\` exists locally`, exists, `refs/heads/${branch} not found`);
 

@@ -14,6 +14,21 @@ public class RateLimitService {
     private static final int MAX_REQUESTS = 3;
     private static final long TIME_WINDOW_SECONDS = 1800; // 30 minutes
 
+    /**
+     * The limit, so callers can describe it accurately instead of restating it.
+     * The 429 response used to tell visitors "1 email every 30 minutes" while this
+     * allowed 3 — a number written twice drifts, and the copy a visitor reads is
+     * always the copy nobody updates.
+     */
+    public int getMaxRequests() {
+        return MAX_REQUESTS;
+    }
+
+    /** The window the limit applies over, in minutes. */
+    public long getWindowMinutes() {
+        return TIME_WINDOW_SECONDS / 60;
+    }
+
     public boolean isAllowed(String ipAddress) {
         Queue<Instant> requests = ipRequestMap.computeIfAbsent(ipAddress, k -> new ConcurrentLinkedQueue<>());
         Instant now = Instant.now();

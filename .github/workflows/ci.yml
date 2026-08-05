@@ -1,6 +1,7 @@
 # jonwhitmer.com — continuous integration
 #
-# Runs on every push to dev, stage and master, and on every pull request into them.
+# Runs on every push to dev, stage and main, and on every pull request into them.
+# Promotion is dev -> stage -> main, and main is what production is built from.
 #
 # Why this exists: between 2025-10-21 and 2026-08-04 the live site served a nine-month-old
 # build while the working tree carried the Lowe's role, the 2026 resume and five project
@@ -17,9 +18,9 @@ name: CI
 
 on:
   push:
-    branches: [dev, stage, master]
+    branches: [dev, stage, main]
   pull_request:
-    branches: [dev, stage, master]
+    branches: [dev, stage, main]
   workflow_dispatch:
 
 # A newer push to the same branch makes the older run pointless. Cancel it rather than
@@ -88,6 +89,9 @@ jobs:
         working-directory: portfolio-frontend
         env:
           VITE_API_URL: https://api.jonwhitmer.com
+          # Not a secret — it is a contact address that ships in the public bundle either
+          # way. Kept as a variable so there is exactly one definition of where mail goes.
+          VITE_CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL || 'jonmwhitmer@gmail.com' }}
         run: npm run build
 
       - name: Guard against the placeholder resume path shipping again

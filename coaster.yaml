@@ -42,6 +42,12 @@ services:
       # https://api.jonwhitmer.com it would send real email from a dev session.
       # The backend is not started by Coaster yet — see the note at the bottom.
       VITE_API_URL: "http://localhost:8080"
+
+      # The address the Copy / Gmail / Outlook buttons point at. REQUIRED — the
+      # build throws without it rather than shipping `mailto:undefined`, which
+      # looks like a working button and is not. Must match the backend's MY_EMAIL;
+      # these two once disagreed, so the page and the API had different inboxes.
+      VITE_CONTACT_EMAIL: "jonmwhitmer@gmail.com"
     ports: [5173]
     health:
       # MUST be /index.html, not "/". Vite's dev server only falls back to the

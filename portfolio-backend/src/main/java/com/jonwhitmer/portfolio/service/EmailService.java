@@ -23,7 +23,10 @@ public class EmailService {
     @Value("${sender.email:info@jonwhitmer.com}")
     private String fromEmail;
 
-    @Value("${contact.email:jonmwhitmer@gmail.com}")
+    // No default on purpose. A fallback address means an unset MY_EMAIL still boots, and
+    // every message a visitor sends goes somewhere nobody chose — silently, for as long as
+    // it takes someone to notice an empty inbox. Missing configuration should stop startup.
+    @Value("${contact.email}")
     private String toEmail;
 
     public void sendContactEmail(ContactRequest request) {
